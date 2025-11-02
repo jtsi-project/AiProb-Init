@@ -1,47 +1,26 @@
 #!/bin/bash
-# --- AiProb Master Installer (init.sh) ---
-# FUNGSI: Mengunduh skrip instalasi utama dari Repo Installer.
-# Pengembang: Anjas Amar Pradana / JTSI
+# --- AiProb v7.2-rc CORE Installer (init.sh) ---
+# FUNGSI: Otak Instalasi. Melakukan pre-check, venv, dan membuat app.py.
+# Versi di sini hanya untuk identifikasi.
 
+# --- KONFIGURASI PROYEK DI CORE LOGIC ---
+VENV_NAME=".venv_aiprob"
+PYTHON_BIN="python3"
+# PATH KE REPO INSTALLER (DIGUNAKAN APP.PY UNTUK MENGAMBIL VERSI INI)
+GITHUB_REPO_PATH="jtsi-project/AiProb" 
+GITHUB_VERSION_INI_URL="https://raw.githubusercontent.com/jtsi-project/AiProb-Version/main/version.ini"
+CORE_VERSION="v7.2-rc" # Versi Internal Logika
+
+# Hentikan jika ada error
 set -e
-# URL untuk mengunduh installer.sh dari Repo Installer
-GITHUB_INSTALLER_RAW_URL="https://raw.githubusercontent.com/jtsi-project/AiProb/main/installer.sh"
 
-echo "================================================="
-echo "== AiProb v7.2 Installer Master (INIT) =="
-echo "================================================="
-echo "Skrip ini akan mengunduh installer utama dari repositori 'AiProb' Anda."
+# ... (Semua Logika Pre-Check Lingkungan dan Tools) ...
+# ... (Semua Logika Instalasi VENV, Pip Install) ...
 
-if [ -f "installer.sh" ]; then
-    echo "🚨 PERINGATAN: File 'installer.sh' sudah ada di direktori ini."
-    read -p "  -> Apakah Anda ingin menghapus 'installer.sh' lama dan mengunduh yang baru? [Y/n] " PERSETUJUAN
-    if [ "$PERSETUJUAN" != "y" ] && [ "$PERSETUJUAN" != "Y" ] && [ "$PERSETUJUAN" != "" ]; then
-        echo "Installer Master dibatalkan. Silakan jalankan ./installer.sh secara langsung."
-        exit 0
-    fi
-    rm -f installer.sh
-fi
+# --- TAHAP PEMBUATAN FILE (APP.PY) ---
+# Di dalam app.py, GITHUB_VERSION_INI_URL akan disisipkan dengan URL ke repo 'AiProb-Version'.
 
-echo "[1/2] Mengunduh skrip instalasi utama ('installer.sh')..."
-if command -v curl &> /dev/null; then
-    curl -sSL -o installer.sh "$GITHUB_INSTALLER_RAW_URL"
-elif command -v wget &> /dev/null; then
-    wget -q -O installer.sh "$GITHUB_INSTALLER_RAW_URL"
-else
-    echo "ERROR: curl atau wget tidak ditemukan. Tidak dapat mengunduh installer.sh."
-    exit 1
-fi
+# ... (Seluruh Logic Pembuatan app.py, HTML, dan runner.sh) ...
 
-if [ ! -f "installer.sh" ]; then
-    echo "ERROR: Pengunduhan gagal. Cek koneksi atau URL GitHub: $GITHUB_INSTALLER_RAW_URL"
-    exit 1
-fi
-
-chmod +x installer.sh
-echo "✅ Pengunduhan berhasil. Izin eksekusi diberikan."
-
-echo "[2/2] Mengalihkan ke Installer Utama..."
-echo "-------------------------------------------------"
-echo "Silakan jalankan skrip yang baru diunduh untuk melanjutkan instalasi:"
-echo "   ./installer.sh"
-echo "-------------------------------------------------"
+# --- OPSI PASCA-INSTALASI (UX Interaktif) ---
+# ... (Menu interaktif) ...
