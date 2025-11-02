@@ -38,11 +38,23 @@ read -p "Pilih opsi [1/2]: " POST_INSTALL_CHOICE
 if [ "$POST_INSTALL_CHOICE" == "1" ]; then
     echo "Memulai AiProb..."
     
-    # *** PERBAIKAN Izin Eksekusi Mutlak di sini ***
+    # 1. Pastikan Izin Eksekusi
     chmod +x runner.sh 
     
-    # Jalankan menggunakan bash agar pasti
-    bash ./runner.sh
+    # 2. **PERBAIKAN KRITIS: Hapus Carriage Return (CR)**
+    # Ini mengatasi masalah di mana file yang ditulis Python memiliki karakter aneh (404)
+    if command -v dos2unix &> /dev/null; then
+        dos2unix runner.sh
+    else
+        # Fallback menggunakan 'tr' (lebih universal)
+        tr -d '\r' < runner.sh > runner.sh.tmp && mv runner.sh.tmp runner.sh
+    fi
+    
+    # 3. Jalankan runner.sh di shell baru yang bersih
+    exec bash ./runner.sh
+    
+    # exec akan menggantikan proses ini. Jika gagal, pesan di bawah muncul:
+    echo "❌ ERROR: Gagal memulai runner.sh. Cek runner.sh"
 fi
 
 # Nonaktifkan Venv (Ini hanya formalitas)
