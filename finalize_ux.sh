@@ -1,61 +1,70 @@
-#!/bin/bash
-# Part 3: UX akhir dan menu interaktif.
+import os
+import sys
+import subprocess
 
-# Ambil CORE_VERSION dari argumen pertama
-CORE_VERSION=$1
-VENV_NAME=".venv_aiprob"
+# Ambil versi dari argumen pertama
+try:
+    CORE_VERSION = sys.argv[1]
+except IndexError:
+    print("ERROR: Argumen CORE_VERSION hilang.")
+    sys.exit(1)
 
-# Hentikan jika ada error
-set -e
+# Ambil PATHS dari Environment Variables (diset di setup_prerequisites.sh)
+PYTHON_BIN = os.environ.get('PYTHON_BIN', 'python3')
+VENV_NAME = os.environ.get('VENV_NAME', '.venv_aiprob')
 
-echo "-------------------------------------------------"
-echo "✅ INSTALASI CORE SELESAI TOTAL! Program Siap Dioperasikan."
-echo "-------------------------------------------------"
-echo ""
-echo "🔥 PANDUAN PENGOPERASIAN AiProb v$CORE_VERSION 🔥"
-echo "-------------------------------------------------"
-echo "Langkah 1: Menjalankan Server"
-echo "Akses: Jalankan skrip runner yang telah disiapkan."
-echo "   \$ ./runner.sh"
-echo ""
-echo "Langkah 2: Setup Awal (Hanya sekali)"
-echo "Akses: Buka browser Anda dan kunjungi http://127.0.0.1:5000"
-echo "Aksi: Buat akun Admin dan masukkan Kunci API Gemini Anda."
-echo ""
-echo "Langkah 3: Penggunaan Normal"
-echo "Akses: Login sebagai Admin (👑) untuk pengaturan dan Logs, atau User (💬) untuk chat AI."
-echo ""
-echo "Langkah 4: Menghentikan Server"
-echo "Aksi: Di terminal server berjalan, tekan Ctrl + C. Lingkungan akan dinonaktifkan."
-echo "-------------------------------------------------"
+def run_ai_prob():
+    # 1. Cleaning Runner.sh (Tetap lakukan cleaning di Python untuk kebersihan maksimal)
+    try:
+        with open('runner.sh', 'r') as f:
+            content = f.read()
+        # Hapus Carriage Returns (CR) yang menyebabkan masalah '404'
+        clean_content = content.replace('\r', '') 
+        with open('runner.sh', 'w') as f:
+            f.write(clean_content)
+        
+        # 2. Pastikan Izin Eksekusi
+        os.chmod('runner.sh', 0o755)
 
-# Menampilkan opsi interaktif baru
-echo "\n--- OPSI PASCA-INSTALASI ---"
-echo "1. Jalankan AiProb sekarang (./runner.sh)"
-echo "2. Keluar (Lakukan secara manual nanti)"
-read -p "Pilih opsi [1/2]: " POST_INSTALL_CHOICE
+        # 3. Eksekusi runner.sh menggunakan subprocess (paling stabil)
+        print("Memulai AiProb menggunakan subprocess...")
+        # Kita menggunakan exec/bash agar runner.sh mengambil alih shell
+        subprocess.call(["bash", "./runner.sh"]) 
 
-if [ "$POST_INSTALL_CHOICE" == "1" ]; then
-    echo "Memulai AiProb..."
+    except Exception as e:
+        print(f"❌ ERROR: Gagal menjalankan runner.sh dari Python: {e}")
+        sys.exit(1)
+
+
+# --- DISPLAY UX DAN MENU INTERAKTIF ---
+def display_ux_and_menu():
+    print("-------------------------------------------------")
+    print("✅ INSTALASI CORE SELESAI TOTAL! Program Siap Dioperasikan.")
+    print("-------------------------------------------------")
+    print("\n🔥 PANDUAN PENGOPERASIAN AiProb v{} 🔥".format(CORE_VERSION))
+    print("-------------------------------------------------")
+    print("Langkah 1: Menjalankan Server")
+    print("Akses: Jalankan skrip runner yang telah disiapkan.")
+    print("   $ ./runner.sh")
+    print("")
+    print("Langkah 2: Setup Awal (Hanya sekali)")
+    print("Akses: Buka browser Anda dan kunjungi http://127.0.0.1:5000")
+    print("Aksi: Buat akun Admin dan masukkan Kunci API Gemini Anda.")
+    print("-------------------------------------------------")
+
+    # Menampilkan opsi interaktif baru
+    print("\n--- OPSI PASCA-INSTALASI ---")
+    print("1. Jalankan AiProb sekarang (./runner.sh)")
+    print("2. Keluar (Lakukan secara manual nanti)")
     
-    # 1. Pastikan Izin Eksekusi
-    chmod +x runner.sh 
+    try:
+        post_install_choice = input("Pilih opsi [1/2]: ")
+    except EOFError:
+        post_install_choice = '2' # Jika non-interaktif
     
-    # 2. **PERBAIKAN KRITIS: Hapus Carriage Return (CR)**
-    # Ini mengatasi masalah di mana file yang ditulis Python memiliki karakter aneh (404)
-    if command -v dos2unix &> /dev/null; then
-        dos2unix runner.sh
-    else
-        # Fallback menggunakan 'tr' (lebih universal)
-        tr -d '\r' < runner.sh > runner.sh.tmp && mv runner.sh.tmp runner.sh
-    fi
-    
-    # 3. Jalankan runner.sh di shell baru yang bersih
-    exec bash ./runner.sh
-    
-    # exec akan menggantikan proses ini. Jika gagal, pesan di bawah muncul:
-    echo "❌ ERROR: Gagal memulai runner.sh. Cek runner.sh"
-fi
+    if post_install_choice == "1":
+        run_ai_prob()
 
-# Nonaktifkan Venv (Ini hanya formalitas)
-deactivate 
+
+if __name__ == "__main__":
+    display_ux_and_menu()
